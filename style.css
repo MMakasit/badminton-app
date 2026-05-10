@@ -380,21 +380,34 @@ main {
 
 .score-controls {
     display: flex;
-    gap: 1rem;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 15%; /* ถ่างปุ่มให้ไปชิดขอบ */
     margin-bottom: 2rem;
 }
 
 .btn-score-control {
-    width: 80px;
-    height: 80px;
+    width: 110px;
+    height: 110px;
     border-radius: 50%;
-    font-size: 3rem;
+    font-size: 4rem;
     border: none;
-    background: var(--bg-color);
-    color: var(--text-main);
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     transition: transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-score-control.btn-plus {
+    background: #00ff88;
+    color: #000;
+}
+
+.btn-score-control.btn-minus {
+    background: #ff006e;
+    color: #fff;
 }
 
 .btn-score-control:active {
@@ -419,7 +432,7 @@ main {
 }
 
 .btn-winner {
-    background: var(--primary-color);
+    background: #ffb703; /* สีทอง สื่อถึงชัยชนะ */
     color: #000;
     font-weight: bold;
     font-size: 1.5rem;
@@ -428,6 +441,15 @@ main {
     border-radius: 12px;
     cursor: pointer;
     width: 100%;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+.btn-winner:hover {
+    filter: brightness(1.1);
+}
+
+.btn-winner:active {
+    transform: scale(0.98);
 }
 
 /* Layout หน้าตารางแข่ง */
