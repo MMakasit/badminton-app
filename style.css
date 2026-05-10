@@ -1,0 +1,478 @@
+/* กำหนดโทนสีและตัวแปรต่างๆ ให้เป็น Modern Dark Theme */
+:root {
+    --bg-color: #121212; /* สีพื้นหลังหลัก (ดำ/เทาเข้ม) */
+    --surface-color: #1e1e1e; /* สีพื้นผิวย่อย เช่น การ์ด */
+    --primary-color: #00ff88; /* สีเขียวนีออน สำหรับปุ่มเด่นๆ ให้ดูสปอร์ต */
+    --primary-hover: #00cc6a;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --glass-bg: rgba(30, 30, 30, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* ใช้ฟอนต์ Prompt เพื่อภาษาไทยที่สวยงาม */
+    font-family: 'Prompt', 'Inter', sans-serif; 
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-main);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* --- Navbar (แถบด้านบน) --- */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px); /* เอฟเฟกต์เบลอแบบกระจก */
+    border-bottom: 1px solid var(--glass-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.3s;
+    font-weight: 600;
+}
+
+.nav-btn:hover, .nav-btn.active {
+    color: var(--primary-color);
+}
+
+/* --- Main Content (พื้นที่แสดงผล) --- */
+main {
+    padding: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-section {
+    display: none; /* ซ่อนทุกหน้าไว้ก่อน */
+    animation: fadeIn 0.4s ease;
+}
+
+.page-section.active {
+    display: block; /* แสดงเฉพาะหน้าที่มีคลาส active */
+}
+
+/* --- Typography & Elements --- */
+.page-header {
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--glass-border);
+    padding-bottom: 1rem;
+}
+
+.page-header h2 {
+    color: var(--primary-color);
+}
+
+.page-header p {
+    color: var(--text-muted);
+}
+
+.placeholder-box {
+    border: 2px dashed var(--glass-border);
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+    border-radius: 8px;
+}
+
+/* --- Hero Section (หน้าแรก) --- */
+.hero {
+    text-align: center;
+    margin-top: 15vh;
+}
+
+.hero h1 {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+}
+
+.hero p {
+    color: var(--text-muted);
+    margin-bottom: 2.5rem;
+    font-size: 1.2rem;
+}
+
+/* --- Buttons (ปุ่ม) --- */
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #000;
+    border: none;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s, background-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+}
+
+/* --- Animations --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Player Management (ระบบจัดการผู้เล่น) --- */
+.player-management-container {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+}
+
+.player-form {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+#player-name-input {
+    flex: 1;
+    padding: 1rem;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    background: var(--bg-color);
+    color: var(--text-main);
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+#player-name-input:focus {
+    border-color: var(--primary-color);
+}
+
+.player-list-container h3 {
+    margin-bottom: 1rem;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+}
+
+.player-list {
+    list-style: none;
+    display: grid;
+    /* จัดเป็นตาราง (Grid) ถ้าจอใหญ่ให้แสดงหลายคอลัมน์ */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+}
+
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    animation: fadeIn 0.3s ease;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.player-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.player-stats {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-top: 0.2rem;
+}
+
+.player-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-action {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.btn-action.edit:hover {
+    background: #3a86ff; /* สีฟ้าเวลาเอาเมาส์ชี้ปุ่มแก้ */
+    border-color: #3a86ff;
+}
+
+.btn-action.delete:hover {
+    background: #ff006e; /* สีชมพูแดงเวลาเอาเมาส์ชี้ปุ่มลบ */
+    border-color: #ff006e;
+}
+
+/* --- Tournament Setup & Scoreboard --- */
+.setup-container {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+.setup-group {
+    margin-bottom: 2rem;
+}
+
+.mode-selector {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.mode-option {
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--glass-border);
+    flex: 1;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-option:hover, .mode-option:has(input:checked) {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.participant-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.current-match-card {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    margin-bottom: 2rem;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 20px rgba(0,255,136,0.1);
+}
+
+.vs-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 2rem 0;
+    gap: 1rem;
+}
+
+.team-card {
+    flex: 1;
+    padding: 2rem 1rem;
+    background: var(--bg-color);
+    border-radius: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.team-a { border-left: 5px solid #3a86ff; }
+.team-b { border-right: 5px solid #ff006e; }
+
+.vs-badge {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    background: var(--bg-color);
+    padding: 1rem;
+    border-radius: 50%;
+}
+
+.queue-container {
+    background: var(--surface-color);
+    padding: 2rem;
+    border-radius: 12px;
+}
+
+/* Scoreboard */
+#page-scoreboard.active {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--bg-color);
+    z-index: 1000;
+    padding: 1rem;
+    display: block; /* Override default page-section display */
+}
+
+.scoreboard-container {
+    display: flex;
+    height: calc(100vh - 40px);
+    gap: 1rem;
+    margin-top: 30px;
+}
+
+.score-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.left-side {
+    background: linear-gradient(135deg, rgba(58,134,255,0.2) 0%, rgba(58,134,255,0.05) 100%);
+    border: 1px solid rgba(58,134,255,0.3);
+}
+
+.right-side {
+    background: linear-gradient(135deg, rgba(255,0,110,0.2) 0%, rgba(255,0,110,0.05) 100%);
+    border: 1px solid rgba(255,0,110,0.3);
+}
+
+.score-number {
+    font-size: 15vw;
+    font-weight: 800;
+    line-height: 1;
+    margin: 2rem 0;
+    font-family: 'Inter', sans-serif;
+    color: white;
+}
+
+.score-controls {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.btn-score-control {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    font-size: 3rem;
+    border: none;
+    background: var(--bg-color);
+    color: var(--text-main);
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    transition: transform 0.1s;
+}
+
+.btn-score-control:active {
+    transform: scale(0.9);
+}
+
+.score-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-reset-score {
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    padding: 1rem 2rem;
+    border-radius: 30px;
+    cursor: pointer;
+    transform: rotate(-90deg); /* หมุนแนวตั้งให้อยู่ตรงกลาง */
+    white-space: nowrap;
+}
+
+.btn-winner {
+    background: var(--primary-color);
+    color: #000;
+    font-weight: bold;
+    font-size: 1.5rem;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    width: 100%;
+}
+
+/* Layout หน้าตารางแข่ง */
+.match-queue-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .match-queue-layout {
+        grid-template-columns: 1fr; /* ยุบเป็น 1 คอลัมน์ตอนจอเล็ก */
+    }
+}
+
+/* ปุ่มสลับตัว */
+.swap-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-swap {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    transition: transform 0.1s, filter 0.2s;
+}
+
+.btn-swap.swap-a {
+    background: #3a86ff; /* สีน้ำเงินเข้ากับทีม A */
+}
+
+.btn-swap.swap-b {
+    background: #ff006e; /* สีแดงเข้ากับทีม B */
+}
+
+.btn-swap:hover {
+    filter: brightness(1.2);
+}
+
+.btn-swap:active {
+    transform: scale(0.95);
+}

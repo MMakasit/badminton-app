@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badminton Court Match</title>
+    <!-- นำเข้าฟอนต์ Prompt สำหรับภาษาไทย และ Inter สำหรับตัวเลข/ภาษาอังกฤษ ให้ดูทันสมัย -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- แถบนำทางด้านบน -->
+    <nav class="navbar">
+        <div class="logo">🏸 BadMatch</div>
+        <div class="nav-links">
+            <button id="nav-home" class="nav-btn active">หน้าหลัก</button>
+            <button id="nav-players" class="nav-btn">จัดการผู้เล่น</button>
+        </div>
+    </nav>
+
+    <!-- พื้นที่แสดงเนื้อหาหลัก -->
+    <main id="app-content">
+        <!-- หน้าแรก (เริ่มแรกจะแสดงหน้านี้) -->
+        <section id="page-home" class="page-section active">
+            <div class="hero">
+                <h1>พร้อมลุยหรือยัง?</h1>
+                <p>ระบบสุ่มจับคู่แมตช์แบดมินตัน แบบผู้ชนะอยู่ต่อ!</p>
+                <button id="btn-start-tournament" class="btn-primary">🏆 เริ่มทัวร์นาเมนต์</button>
+            </div>
+        </section>
+
+        <!-- หน้าจัดการผู้เล่น (ซ่อนไว้ก่อน จะแสดงเมื่อกดเมนู) -->
+        <section id="page-players" class="page-section">
+            <div class="page-header">
+                <h2>จัดการผู้เล่น</h2>
+                <p>เพิ่มรายชื่อเพื่อนๆ ของคุณเพื่อใช้ในการจัดแมตช์</p>
+            </div>
+            <div class="player-management-container">
+                <form id="add-player-form" class="player-form">
+                    <input type="text" id="player-name-input" placeholder="พิมพ์ชื่อเพื่อนที่นี่..." required autocomplete="off">
+                    <button type="submit" class="btn-primary">เพิ่มผู้เล่น</button>
+                </form>
+                
+                <div class="player-list-container">
+                    <div class="player-list-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3>รายชื่อทั้งหมด (<span id="player-count">0</span> คน)</h3>
+                        <select id="sort-players" style="padding: 0.5rem; border-radius: 6px; background: var(--bg-color); color: var(--text-main); border: 1px solid var(--glass-border); outline: none;">
+                            <option value="newest">เรียงตามเวลาที่เพิ่ม</option>
+                            <option value="most_wins">ชนะเยอะสุด</option>
+                            <option value="most_matches">ลงแข่งเยอะสุด</option>
+                        </select>
+                    </div>
+                    <ul id="player-list" class="player-list">
+                        <!-- รายชื่อผู้เล่นจะถูกแทรกที่นี่ด้วย Javascript -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- หน้าตั้งค่าทัวร์นาเมนต์ -->
+        <!-- ============================== -->
+        <section id="page-tournament-setup" class="page-section">
+            <div class="page-header">
+                <h2>ตั้งค่าการแข่งขัน</h2>
+                <p>เลือกรูปแบบการเล่นและคนที่มาในวันนี้</p>
+            </div>
+            <div class="setup-container">
+                <div class="setup-group">
+                    <label>รูปแบบการเล่น</label>
+                    <div class="mode-selector">
+                        <label class="mode-option"><input type="radio" name="match_mode" value="1"> 1 vs 1</label>
+                        <label class="mode-option"><input type="radio" name="match_mode" value="2" checked> 2 vs 2</label>
+                        <label class="mode-option"><input type="radio" name="match_mode" value="3"> 3 vs 3</label>
+                    </div>
+                </div>
+                <div class="setup-group">
+                    <label style="display:block; margin-bottom: 1rem;">เลือกผู้เล่นที่จะจัดทีม (<span id="selected-count">0</span> คน)</label>
+                    <div id="participant-list" class="participant-list">
+                        <!-- Checkbox จะถูกสร้างที่นี่ -->
+                    </div>
+                </div>
+                <button id="btn-generate-match" class="btn-primary" style="width: 100%; margin-top:1rem;">🎲 สุ่มจับทีมและเริ่มแมตช์!</button>
+            </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- หน้าคิวการแข่งขัน (King of the court) -->
+        <!-- ============================== -->
+        <section id="page-match-queue" class="page-section">
+            <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+                <div>
+                    <h2>ตารางการแข่งขัน 🏆</h2>
+                    <p>แมตช์ที่ <span id="match-number-display">1</span> (ผู้ชนะได้อยู่ต่อ)</p>
+                </div>
+                <button id="btn-end-tournament" class="btn-action delete">⏹ จบทัวร์นาเมนต์</button>
+            </div>
+
+            <div class="match-queue-layout">
+                <!-- ฝั่งซ้าย: แมตช์ปัจจุบันและคิว -->
+                <div class="queue-main-col">
+                    <div class="current-match-card">
+                        <div class="vs-container">
+                            <div class="team-card team-a" id="display-team-a">ทีมซ้าย</div>
+                            <div class="vs-badge">VS</div>
+                            <div class="team-card team-b" id="display-team-b">ทีมขวา</div>
+                        </div>
+                        <button id="btn-go-scoreboard" class="btn-primary" style="margin-top: 2rem; width: 100%;">▶️ เข้าสู่หน้านับคะแนน</button>
+                    </div>
+
+                    <div class="queue-container">
+                        <h3 style="margin-bottom: 1rem;">ทีมที่รอคิวท้าชิง</h3>
+                        <ul id="waiting-queue-list" class="queue-list" style="list-style:none;">
+                            <!-- คิวจะมาตรงนี้ -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- ฝั่งขวา: สถิติทัวร์นาเมนต์ -->
+                <div class="stats-col">
+                    <div class="tournament-live-stats" style="background:var(--surface-color); padding:1.5rem; border-radius:12px; border:1px solid var(--glass-border);">
+                        <h3 style="margin-bottom:1rem; color:var(--primary-color);">📊 สถิติในแมตช์นี้</h3>
+                        <table style="width:100%; border-collapse:collapse; font-size:0.95rem;" id="live-stats-table">
+                            <thead>
+                                <tr style="border-bottom:1px solid var(--glass-border); text-align:left;">
+                                    <th style="padding-bottom:0.5rem;">ชื่อทีม</th>
+                                    <th style="padding-bottom:0.5rem; text-align:center;">ชนะ</th>
+                                    <th style="padding-bottom:0.5rem; text-align:center;">เล่น</th>
+                                </tr>
+                            </thead>
+                            <tbody id="live-stats-list">
+                                <!-- สถิติจะมาตรงนี้ -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ============================== -->
+        <!-- หน้านับคะแนน (Scoreboard) -->
+        <!-- ============================== -->
+        <section id="page-scoreboard" class="page-section fullscreen">
+            <button id="btn-back-to-queue" class="btn-action" style="margin-bottom:1rem; position:absolute; top:20px; left:20px;">⬅ กลับไปตารางแข่ง</button>
+            <div class="scoreboard-container">
+                <div class="score-side left-side">
+                    <h2 id="sb-team-a-name" style="text-align:center;">ทีมซ้าย</h2>
+                    <div class="score-number" id="score-a">0</div>
+                    <div class="score-controls">
+                        <button class="btn-score-control" onclick="adjustScore('A', -1)">-</button>
+                        <button class="btn-score-control" onclick="adjustScore('A', 1)">+</button>
+                    </div>
+                    <button class="btn-winner" onclick="declareWinner('A')">🏆 ทีมซ้ายชนะ!</button>
+                </div>
+                <div class="score-center">
+                    <button class="btn-reset-score" onclick="resetScores()">รีเซ็ตคะแนน</button>
+                </div>
+                <div class="score-side right-side">
+                    <h2 id="sb-team-b-name" style="text-align:center;">ทีมขวา</h2>
+                    <div class="score-number" id="score-b">0</div>
+                    <div class="score-controls">
+                        <button class="btn-score-control" onclick="adjustScore('B', -1)">-</button>
+                        <button class="btn-score-control" onclick="adjustScore('B', 1)">+</button>
+                    </div>
+                    <button class="btn-winner" onclick="declareWinner('B')">🏆 ทีมขวาชนะ!</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
