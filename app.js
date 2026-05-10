@@ -218,6 +218,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const mode = parseInt(document.querySelector('input[name="match_mode"]:checked').value);
 
+        if (selectedIds.length < mode * 2) {
+            alert(`ต้องมีผู้เล่นอย่างน้อย ${mode * 2} คน สำหรับโหมด ${mode}v${mode} ครับ!`);
+            return;
+        }
+
         let shuffled = [...selectedIds];
         shuffleArray(shuffled);
 
@@ -226,9 +231,11 @@ document.addEventListener('DOMContentLoaded', () => {
         shuffleArray(availableNames);
 
         // จัดกลุ่มเป็นทีม ตามจำนวนโหมด (เช่น โหมด 2 ก็แบ่งทีละ 2 คน)
+        // (ไม่ต้องเติมคนตอนนี้ ให้ไปเติมตอนจะแข่งในคอร์ด)
         tournamentQueue = [];
         for (let i = 0; i < shuffled.length; i += mode) {
-            const teamIds = shuffled.slice(i, i + mode);
+            let teamIds = shuffled.slice(i, i + mode);
+            
             // แปลงจาก ID เป็นข้อมูลจริง
             const teamMembers = teamIds.map(id => {
                 const p = players.find(player => player.id === id);
@@ -241,6 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
             tournamentQueue.push({
                 teamName: randomName,
                 members: teamMembers,
+                subs: [], // สำหรับเก็บคนที่มาช่วยตีชั่วคราว
                 wins: 0,
                 matches: 0
             });
@@ -256,16 +264,79 @@ document.addEventListener('DOMContentLoaded', () => {
         renderQueue();
     });
 
+    function updateSubs() {
+        if (tournamentQueue.length < 2) return;
+        
+        const mode = parseInt(document.querySelector('input[name="match_mode"]:checked').value);
+        const teamA = tournamentQueue[0];
+        const teamB = tournamentQueue[1];
+        
+        // ล้าง subs ของทีมที่รอคิวอยู่ทั้งหมด (พวกเขาไม่ได้กำลังแข่ง)
+        for(let i = 2; i < tournamentQueue.length; i++) {
+            tournamentQueue[i].subs = [];
+        }
+        
+        if(!teamA.subs) teamA.subs = [];
+        if(!teamB.subs) teamB.subs = [];
+        
+        // ใครบ้างที่เป็นตัวจริงในแมตช์นี้
+        let activeMains = new Set();
+        teamA.members.forEach(m => activeMains.add(m.id));
+        teamB.members.forEach(m => activeMains.add(m.id));
+        
+        // ถ้า sub คนไหนต้องมาลงตีเป็นตัวจริง ให้ลบออกจากการเป็น sub
+        teamA.subs = teamA.subs.filter(sub => !activeMains.has(sub.id));
+        teamB.subs = teamB.subs.filter(sub => !activeMains.has(sub.id));
+        
+        // ผู้เล่นที่ไม่ว่าง (ตัวจริง และตัว sub ที่ยังเล่นอยู่)
+        let unavailableIds = new Set(activeMains);
+        teamA.subs.forEach(sub => unavailableIds.add(sub.id));
+        teamB.subs.forEach(sub => unavailableIds.add(sub.id));
+        
+        function fillMissing(team) {
+            let needed = mode - (team.members.length + team.subs.length);
+            if (needed <= 0) return;
+            
+            // หาคนที่ว่างจากทีมในคิว
+            let pool = [];
+            for(let i = 2; i < tournamentQueue.length; i++) {
+                tournamentQueue[i].members.forEach(m => {
+                    if(!unavailableIds.has(m.id)) {
+                        pool.push(m);
+                    }
+                });
+            }
+            
+            shuffleArray(pool);
+            
+            for(let i = 0; i < needed; i++) {
+                if(pool[i]) {
+                    team.subs.push(pool[i]);
+                    unavailableIds.add(pool[i].id);
+                }
+            }
+        }
+        
+        fillMissing(teamA);
+        fillMissing(teamB);
+    }
+
     // 3.3 การแสดงผลคิวรอแข่ง
     function renderQueue() {
+        updateSubs(); // เติมคนให้ทีมที่ขาดก่อนแสดงผล
+        
         document.getElementById('match-number-display').textContent = currentMatchNum;
 
         const teamA = tournamentQueue[0];
         const teamB = tournamentQueue[1];
 
+        // จัดเตรียมชื่อผู้เล่นที่จะแสดง (รวมตัวสำรอง)
+        const displayMembersA = teamA.members.map(p => p.name).concat(teamA.subs.map(p => `<span style="color:#ffb703;">${p.name} (สุ่มมา)</span>`)).join(', ');
+        const displayMembersB = teamB.members.map(p => p.name).concat(teamB.subs.map(p => `<span style="color:#ffb703;">${p.name} (สุ่มมา)</span>`)).join(', ');
+
         // แสดงชื่อทีมที่กำลังตี
-        document.getElementById('display-team-a').innerHTML = `<strong>${teamA.teamName}</strong><br><span style="font-size:0.9rem; font-weight:normal; color:var(--text-main);">${teamA.members.map(p => p.name).join(', ')}</span>`;
-        document.getElementById('display-team-b').innerHTML = `<strong>${teamB.teamName}</strong><br><span style="font-size:0.9rem; font-weight:normal; color:var(--text-main);">${teamB.members.map(p => p.name).join(', ')}</span>`;
+        document.getElementById('display-team-a').innerHTML = `<strong>${teamA.teamName}</strong><br><span style="font-size:0.9rem; font-weight:normal; color:var(--text-main);">${displayMembersA}</span>`;
+        document.getElementById('display-team-b').innerHTML = `<strong>${teamB.teamName}</strong><br><span style="font-size:0.9rem; font-weight:normal; color:var(--text-main);">${displayMembersB}</span>`;
 
         // แสดงคิวที่รอ
         const queueList = document.getElementById('waiting-queue-list');
@@ -365,8 +436,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const teamA = tournamentQueue[0];
         const teamB = tournamentQueue[1];
-        document.getElementById('sb-team-a-name').innerHTML = `${teamA.teamName}<br><span style="font-size:1rem; font-weight:normal; color:rgba(255,255,255,0.7);">${teamA.members.map(p => p.name).join(', ')}</span>`;
-        document.getElementById('sb-team-b-name').innerHTML = `${teamB.teamName}<br><span style="font-size:1rem; font-weight:normal; color:rgba(255,255,255,0.7);">${teamB.members.map(p => p.name).join(', ')}</span>`;
+        
+        const displayMembersA = teamA.members.map(p => p.name).concat(teamA.subs.map(p => `${p.name}(สุ่ม)`)).join(', ');
+        const displayMembersB = teamB.members.map(p => p.name).concat(teamB.subs.map(p => `${p.name}(สุ่ม)`)).join(', ');
+
+        document.getElementById('sb-team-a-name').innerHTML = `${teamA.teamName}<br><span style="font-size:1rem; font-weight:normal; color:rgba(255,255,255,0.7);">${displayMembersA}</span>`;
+        document.getElementById('sb-team-b-name').innerHTML = `${teamB.teamName}<br><span style="font-size:1rem; font-weight:normal; color:rgba(255,255,255,0.7);">${displayMembersB}</span>`;
 
         switchPage('page-scoreboard');
     });
@@ -410,7 +485,10 @@ document.addEventListener('DOMContentLoaded', () => {
         teamA.matches++;
         teamB.matches++;
 
-        [...teamA.members, ...teamB.members].forEach(member => {
+        const allA = [...teamA.members, ...(teamA.subs || [])];
+        const allB = [...teamB.members, ...(teamB.subs || [])];
+
+        [...allA, ...allB].forEach(member => {
             const p = players.find(x => x.id === member.id);
             if (p) p.matches++;
         });
@@ -419,7 +497,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (winnerSide === 'A') {
             // ทีมซ้ายชนะ! (ได้สถิติ + อยู่ต่อ)
             teamA.wins++;
-            teamA.members.forEach(member => {
+            allA.forEach(member => {
                 const p = players.find(x => x.id === member.id);
                 if (p) p.wins++;
             });
@@ -430,14 +508,18 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // ทีมขวาชนะ! (ได้สถิติ + อยู่ต่อ)
             teamB.wins++;
-            teamB.members.forEach(member => {
+            allB.forEach(member => {
                 const p = players.find(x => x.id === member.id);
                 if (p) p.wins++;
             });
             // เอาทีมแพ้ (ทีม A Index ที่ 0) ออกไปต่อท้ายคิว
             const loserTeam = tournamentQueue.splice(0, 1)[0];
             tournamentQueue.push(loserTeam);
-            // หมายเหตุ: ทีม B จะเด้งขึ้นมาเป็น Index 0 (ทีมฝั่งซ้าย) อัตโนมัติเพราะ A โดนดึงออกไปแล้ว
+            
+            // สลับตำแหน่ง 0 และ 1 เพื่อให้ทีม B ยังคงอยู่ที่ฝั่งขวา (Index 1) เสมอ
+            const temp = tournamentQueue[0];
+            tournamentQueue[0] = tournamentQueue[1];
+            tournamentQueue[1] = temp;
         }
 
         // เซฟและอัปเดตระบบ
